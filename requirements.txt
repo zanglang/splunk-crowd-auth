@@ -1,0 +1,1 @@
+-e git+https://github.com/aelse/python-crowd.git@v0.8#egg=python-crowd

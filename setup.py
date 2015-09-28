@@ -1,6 +1,6 @@
 from setuptools import setup
 
-dependencies = ['python-crowd']
+dependencies = ['Crowd']
 
 setup(
     name='splunk-crowd-auth',

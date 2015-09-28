@@ -6,7 +6,7 @@
 import crowd
 import os, sys, getpass
 
-from commonauth import *
+from commonAuth import *
 
 app_url = 'http://my.crowd.server:8095/crowd/'
 app_user = 'testapp'

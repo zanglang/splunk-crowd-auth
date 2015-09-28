@@ -48,7 +48,7 @@ def getSearchFilter( args ):
     else:
         print FAILED
 
-if __name__ == "__main__":
+def main():
     callName = sys.argv[1]
     dictIn = readInputs()
 
@@ -63,3 +63,6 @@ if __name__ == "__main__":
         getSearchFilter( dictIn )
     else:
         print "ERROR unknown function call: " + callName
+
+if __name__ == "__main__":
+    main()

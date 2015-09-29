@@ -9,7 +9,7 @@ import os, sys, getpass
 
 from commonAuth import *
 
-with open('config.json') as data_file:
+with open('/opt/splunk/etc/system/local/crowd.json') as data_file:
     data = json.load(data_file)
 
 

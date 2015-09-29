@@ -4,13 +4,18 @@
 # the users and group lookups to an Atlassian Crowd server.
 
 import crowd
+import json
 import os, sys, getpass
 
 from commonAuth import *
 
-app_url = 'http://my.crowd.server:8095/crowd/'
-app_user = 'testapp'
-app_pass = 'testpass'
+with open('/opt/splunk/etc/system/local/crowd.json') as data_file:
+    data = json.load(data_file)
+
+
+app_url = data['server_url']
+app_user = data['user']
+app_pass = data['password']
 
 splunk_user_group = 'splunk-users'
 

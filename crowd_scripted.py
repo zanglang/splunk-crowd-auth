@@ -7,6 +7,8 @@ import crowd
 import json
 import os, sys, getpass
 
+sys.path.append('/opt/splunk/share/splunk/authScriptSamples')
+
 from commonAuth import *
 
 with open('/opt/splunk/etc/system/local/crowd.json') as data_file:

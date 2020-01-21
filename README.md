@@ -5,7 +5,7 @@ A python script that allows Splunk to integrate with Atlassian Crowd for authent
 
 #Dependencies
 
-- [python-crowd](https://github.com/aelse/python-crowd)
+- [python-crowd](https://github.com/pycontribs/python-crowd)
 
 #See Also
 

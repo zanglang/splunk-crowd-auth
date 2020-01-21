@@ -1,1 +1,1 @@
--e git+https://github.com/aelse/python-crowd.git@v0.8#egg=python-crowd
+-e git+https://github.com/pycontribs/python-crowd.git@v2.0.0#egg=python-crowd

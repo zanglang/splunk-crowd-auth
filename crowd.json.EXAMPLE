@@ -1,0 +1,10 @@
+{
+    "server_url": "https://crowd:8095/crowd/",
+    "app_user": "splunk",
+    "app_pass": "password",
+    "allowed_groups": [
+        "splunk-administrators",
+        "splunk-users"
+    ],
+    "allowed_group_prefix": "splunk_"
+}

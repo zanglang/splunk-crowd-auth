@@ -3,73 +3,98 @@
 # This is a Splunk scripted auth implementation that delegates
 # the users and group lookups to an Atlassian Crowd server.
 
+from __future__ import print_function
+import argparse
 import crowd
 import json
-import os, sys, getpass
+import os
+from commonAuth import readInputs
 
-sys.path.append('/opt/splunk/share/splunk/authScriptSamples')
 
-from commonAuth import *
+SCRIPTPATH = os.path.dirname(os.path.abspath(__file__))
+USERNAME = "username"
+USERTYPE = "role"
+SUCCESS = "--status=success"
+FAILED = "--status=fail"
 
-with open('/opt/splunk/etc/system/local/crowd.json') as data_file:
+#################################################################
+
+with open(os.path.join(SCRIPTPATH, 'crowd.json')) as data_file:
     data = json.load(data_file)
 
-
 app_url = data['server_url']
-app_user = data['user']
-app_pass = data['password']
-
-splunk_user_group = 'splunk-users'
+app_user = data['app_user']
+app_pass = data['app_pass']
+allowed_groups = data["allowed_groups"]
+allowed_group_prefix = data["allowed_group_prefix"]
 
 # Create the reusable Crowd object
 cs = crowd.CrowdServer(app_url, app_user, app_pass)
+if not cs.auth_ping():
+    raise Exception("Unable to connect to Crowd, please check the credentials.")
 
-def userLogin( args ):
+
+def userLogin(args):
     success = cs.auth_user(args[USERNAME], args['password'])
     if success:
-        print SUCCESS
+        print(SUCCESS)
     else:
-        print FAILED
+        print(FAILED)
 
-def getUserInfo( args ):
-    un = args[USERNAME]
-    groups = cs.get_nested_groups(un)
+
+def getUserGroups(username):
+    groups = cs.get_nested_groups(username)
     if groups:
-        print SUCCESS + ' --userInfo=' + un + ';' + un + ';' + un + ';' + ':'.join(groups)
-    else:
-        print FAILED
+        for g in sorted(groups):
+            if g in allowed_groups:
+                yield g
+            if g.startswith("splunk_"):
+                yield g.replace("splunk_", "")
 
-def getUsers( args ):
-    users = cs.get_nested_group_users(splunk_user_group)
+
+def getUserInfo(args):
+    un = args[USERNAME]
+    groups = list(getUserGroups(un))
+    if groups:
+        print(SUCCESS + " --userInfo=%s;%s;%s;%s" % (un, un, un, ':'.join(groups)))
+    else:
+        print(FAILED)
+
+
+def getUsers(_):
+    users = [user for group in allowed_groups for user in cs.get_nested_group_users(group)]
+
     out = SUCCESS
     for un in users:
-        groups = cs.get_nested_groups(un)
-        out += ' --userInfo=' + un + ';' + un + ';' + un + ';' + ':'.join(groups)
+        groups = getUserGroups(un)
+        out += " --userInfo=%s;%s;%s;%s" % (un, un, un, ':'.join(groups))
 
-    print out
+    print(out)
 
-def getSearchFilter( args ):
+
+def getSearchFilter(args):
     # Ignore search filters
-    if cs.user_exists(args[USERNAME]):
-        print SUCCESS
+    un = args[USERNAME]
+    groups = list(getUserGroups(un))
+    if groups:
+        print(SUCCESS)
     else:
-        print FAILED
+        print(FAILED)
+
 
 def main():
-    callName = sys.argv[1]
-    dictIn = readInputs()
+    p = argparse.ArgumentParser()
+    p.add_argument("action", help="Authentication action to perform", choices=(
+        "userLogin",
+        "getUserInfo",
+        "getUsers",
+        "getSearchFilter"
+    ))
+    args = p.parse_args()
 
-    returnDict = {}
-    if callName == "userLogin":
-        userLogin( dictIn )
-    elif callName == "getUsers":
-        getUsers( dictIn )
-    elif callName == "getUserInfo":
-        getUserInfo( dictIn )
-    elif callName == "getSearchFilter":
-        getSearchFilter( dictIn )
-    else:
-        print "ERROR unknown function call: " + callName
+    dictIn = readInputs()
+    globals()[args.action](dictIn)
+
 
 if __name__ == "__main__":
     main()
